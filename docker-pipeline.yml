@@ -1,0 +1,36 @@
+trigger: none
+
+pool:
+  name: Default
+
+stages:
+  - stage: BuildImage
+    displayName: "Stage 1 - Build Docker Image"
+    jobs:
+      - job: Build
+        steps:
+          - checkout: self
+          - script: docker build -t giriacr.azurecr.io/myapp:v1 .
+            displayName: "Build Docker Image"
+
+  - stage: PushImage
+    displayName: "Stage 2 - Push to ACR"
+    dependsOn: BuildImage
+    jobs:
+      - job: Push
+        steps:
+          - script: |
+              az acr login --name giriacr
+              docker push giriacr.azurecr.io/myapp:v1
+            displayName: "Push to ACR"
+
+  - stage: RunContainer
+    displayName: "Stage 3 - Run Container"
+    dependsOn: PushImage
+    jobs:
+      - job: Run
+        steps:
+          - script: |
+              docker pull giriacr.azurecr.io/myapp:v1
+              docker run -d --name mycontainer giriacr.azurecr.io/myapp:v1
+            displayName: "Run Container"
