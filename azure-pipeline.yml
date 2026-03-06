@@ -1,5 +1,4 @@
 trigger: none
-  
 
 pool:
   name: Default
@@ -22,7 +21,9 @@ stages:
       - job: Validate
         steps:
           - checkout: self
-          - script: terraform validate
+          - script: |
+              terraform init
+              terraform validate
             displayName: "Run Terraform Validate"
             workingDirectory: $(System.DefaultWorkingDirectory)
 
@@ -33,6 +34,8 @@ stages:
       - job: Apply
         steps:
           - checkout: self
-          - script: terraform apply -auto-approve
+          - script: |
+              terraform init
+              terraform apply -auto-approve
             displayName: "Run Terraform Apply"
             workingDirectory: $(System.DefaultWorkingDirectory)
