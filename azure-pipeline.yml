@@ -1,0 +1,38 @@
+trigger: none
+  
+
+pool:
+  name: Default
+
+stages:
+  - stage: TerraformInit
+    displayName: "Stage 1 - Terraform Init"
+    jobs:
+      - job: Init
+        steps:
+          - checkout: self
+          - script: terraform init
+            displayName: "Run Terraform Init"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+  - stage: TerraformValidate
+    displayName: "Stage 2 - Terraform Validate"
+    dependsOn: TerraformInit
+    jobs:
+      - job: Validate
+        steps:
+          - checkout: self
+          - script: terraform validate
+            displayName: "Run Terraform Validate"
+            workingDirectory: $(System.DefaultWorkingDirectory)
+
+  - stage: TerraformApply
+    displayName: "Stage 3 - Terraform Apply"
+    dependsOn: TerraformValidate
+    jobs:
+      - job: Apply
+        steps:
+          - checkout: self
+          - script: terraform apply -auto-approve
+            displayName: "Run Terraform Apply"
+            workingDirectory: $(System.DefaultWorkingDirectory)
